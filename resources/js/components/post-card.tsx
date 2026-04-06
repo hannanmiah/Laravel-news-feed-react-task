@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toggle as toggleLike } from '@/routes/likes';
 import { destroy as destroyPost } from '@/routes/posts';
 import type {Post} from '@/types';
@@ -40,6 +40,21 @@ return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
 
 export default function PostCard({ post, authUserId }: PostCardProps) {
     const [showDropdown, setShowDropdown] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setShowDropdown(false);
+            }
+        };
+        if (showDropdown) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showDropdown]);
     const likerNames = post.likes
         .map((like) => like.user?.full_name ?? `${like.user?.first_name ?? ''} ${like.user?.last_name ?? ''}`.trim())
         .filter((name) => name.length > 0);
@@ -96,8 +111,7 @@ export default function PostCard({ post, authUserId }: PostCardProps) {
                                 </svg>
                             </button>
                         </div>
-                        {showDropdown && (
-                            <div className="_feed_timeline_dropdown _timeline_dropdown" style={{ display: 'block' }}>
+                        <div className={`_feed_timeline_dropdown _timeline_dropdown${showDropdown ? ' show' : ''}`}>
                                 <ul className="_feed_timeline_dropdown_list">
                                     {post.user_id === authUserId && (
                                         <li className="_feed_timeline_dropdown_item">
@@ -128,8 +142,7 @@ export default function PostCard({ post, authUserId }: PostCardProps) {
                                         </a>
                                     </li>
                                 </ul>
-                            </div>
-                        )}
+                        </div>
                     </div>
                 </div>
 
