@@ -1,113 +1,147 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, Link } from '@inertiajs/react';
 import InputError from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
-import TextLink from '@/components/text-link';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
-import { request } from '@/routes/password';
 
 type Props = {
     status?: string;
-    canResetPassword: boolean;
     canRegister: boolean;
 };
 
-export default function Login({
-    status,
-    canResetPassword,
-    canRegister,
-}: Props) {
+export default function Login({ status, canRegister }: Props) {
     return (
         <>
             <Head title="Log in" />
 
-            <Form
-                {...store.form()}
-                resetOnSuccess={['password']}
-                className="flex flex-col gap-6"
-            >
-                {({ processing, errors }) => (
-                    <>
-                        <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    required
-                                    autoFocus
-                                    tabIndex={1}
-                                    autoComplete="email"
-                                    placeholder="email@example.com"
-                                />
-                                <InputError message={errors.email} />
-                            </div>
+            <section className="_social_login_wrapper _layout_main_wrapper">
+                <div className="_shape_one">
+                    <img src="/assets/images/shape1.svg" alt="" className="_shape_img" />
+                </div>
+                <div className="_shape_two">
+                    <img src="/assets/images/shape2.svg" alt="" className="_shape_img" />
+                </div>
+                <div className="_shape_three">
+                    <img src="/assets/images/shape3.svg" alt="" className="_shape_img" />
+                </div>
 
-                            <div className="grid gap-2">
-                                <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
-                                    {canResetPassword && (
-                                        <TextLink
-                                            href={request()}
-                                            className="ml-auto text-sm"
-                                            tabIndex={5}
-                                        >
-                                            Forgot password?
-                                        </TextLink>
+                <div className="_social_login_wrap">
+                    <div className="container">
+                        <div className="row align-items-center">
+                            <div className="col-xl-8 col-lg-8 col-md-12 col-sm-12">
+                                <div className="_social_login_left">
+                                    <div className="_social_login_left_image">
+                                        <img src="/assets/images/login.png" alt="Image" className="_left_img" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-xl-4 col-lg-4 col-md-12 col-sm-12">
+                                <div className="_social_login_content">
+                                    <div className="_social_login_left_logo _mar_b28">
+                                        <img src="/assets/images/logo.svg" alt="Image" className="_left_logo" />
+                                    </div>
+                                    <p className="_social_login_content_para _mar_b8">Welcome back</p>
+                                    <h4 className="_social_login_content_title _titl4 _mar_b50">Login to your account</h4>
+
+                                    <Form
+                                        {...store.form()}
+                                        resetOnSuccess={['password']}
+                                        className="_social_login_form"
+                                    >
+                                        {({ processing, errors }) => (
+                                            <>
+                                                <div className="row">
+                                                    <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+                                                        <div className="_social_login_form_input _mar_b14">
+                                                            <label className="_social_login_label _mar_b8">Email</label>
+                                                            <input
+                                                                type="email"
+                                                                name="email"
+                                                                className="form-control _social_login_input"
+                                                                required
+                                                                autoFocus
+                                                                tabIndex={1}
+                                                                autoComplete="email"
+                                                                placeholder="Enter your email"
+                                                            />
+                                                            {errors.email && <InputError message={errors.email} />}
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+                                                        <div className="_social_login_form_input _mar_b14">
+                                                            <label className="_social_login_label _mar_b8">Password</label>
+                                                            <input
+                                                                type="password"
+                                                                name="password"
+                                                                className="form-control _social_login_input"
+                                                                required
+                                                                tabIndex={2}
+                                                                autoComplete="current-password"
+                                                                placeholder="Enter your password"
+                                                            />
+                                                            {errors.password && <InputError message={errors.password} />}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="row">
+                                                    <div className="col-lg-6 col-xl-6 col-md-6 col-sm-12">
+                                                        <div className="form-check _social_login_form_check">
+                                                            <input
+                                                                type="checkbox"
+                                                                id="remember"
+                                                                name="remember"
+                                                                className="form-check-input _social_login_form_check_input"
+                                                                tabIndex={3}
+                                                            />
+                                                            <label
+                                                                htmlFor="remember"
+                                                                className="_social_login_form_check_label"
+                                                            >
+                                                                Remember me
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="row">
+                                                    <div className="col-lg-12 col-md-12 col-xl-12 col-sm-12">
+                                                        <div className="_social_login_form_btn _mar_t40 _mar_b60">
+                                                            <button
+                                                                type="submit"
+                                                                className="_social_login_form_btn_link _btn1"
+                                                                disabled={processing}
+                                                                data-test="login-button"
+                                                            >
+                                                                {processing ? 'Logging in...' : 'Login now'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+                                    </Form>
+
+                                    {canRegister && (
+                                        <div className="row">
+                                            <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+                                                <div className="_social_login_bottom_txt">
+                                                    <p className="_social_login_bottom_txt_para">
+                                                        Don't have an account?{' '}
+                                                        <Link href={register()}>Create New Account</Link>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
-                                <PasswordInput
-                                    id="password"
-                                    name="password"
-                                    required
-                                    tabIndex={2}
-                                    autoComplete="current-password"
-                                    placeholder="Password"
-                                />
-                                <InputError message={errors.password} />
                             </div>
-
-                            <div className="flex items-center space-x-3">
-                                <Checkbox
-                                    id="remember"
-                                    name="remember"
-                                    tabIndex={3}
-                                />
-                                <Label htmlFor="remember">Remember me</Label>
-                            </div>
-
-                            <Button
-                                type="submit"
-                                className="mt-4 w-full"
-                                tabIndex={4}
-                                disabled={processing}
-                                data-test="login-button"
-                            >
-                                {processing && <Spinner />}
-                                Log in
-                            </Button>
                         </div>
-
-                        {canRegister && (
-                            <div className="text-center text-sm text-muted-foreground">
-                                Don't have an account?{' '}
-                                <TextLink href={register()} tabIndex={5}>
-                                    Sign up
-                                </TextLink>
-                            </div>
-                        )}
-                    </>
-                )}
-            </Form>
+                    </div>
+                </div>
+            </section>
 
             {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
+                <div style={{ textAlign: 'center', marginTop: 16, color: '#16a34a', fontSize: 14 }}>
                     {status}
                 </div>
             )}
@@ -115,7 +149,4 @@ export default function Login({
     );
 }
 
-Login.layout = {
-    title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
-};
+Login.layout = (page: React.ReactNode) => page;
