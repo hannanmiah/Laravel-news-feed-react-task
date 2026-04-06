@@ -11,39 +11,44 @@ class PostController extends Controller
 {
     public function index()
     {
-        $userId = auth()->id();
-
-        $posts = Post::with([
-            'user',
-            'topLevelComments.user',
-            'topLevelComments.replies.user',
-            'topLevelComments.likes.user',
-            'topLevelComments.replies.likes.user',
-            'likes.user',
-        ])
-            ->withCount(['likes', 'comments'])
-            ->visibleTo($userId)
-            ->latest()
-            ->paginate(10);
-
-        $posts->through(function ($post) use ($userId) {
-            $post->is_liked = $post->isLikedBy($userId);
-
-            $post->topLevelComments->each(function ($comment) use ($userId) {
-                $comment->is_liked = $comment->isLikedBy($userId);
-                $comment->likes_count = $comment->likes->count();
-
-                $comment->replies->each(function ($reply) use ($userId) {
-                    $reply->is_liked = $reply->isLikedBy($userId);
-                    $reply->likes_count = $reply->likes->count();
-                });
-            });
-
-            return $post;
-        });
+        $userId = (int) auth()->id();
 
         return Inertia::render('feed', [
-            'posts' => $posts,
+            'posts' => Inertia::scroll(fn () => Post::query()
+                ->select(['id', 'user_id', 'content', 'image', 'visibility', 'created_at'])
+                ->with([
+                    'user:id,first_name,last_name',
+                    'likes' => fn ($query) => $query
+                        ->select(['id', 'user_id', 'likeable_id', 'likeable_type'])
+                        ->with('user:id,first_name,last_name'),
+                    'topLevelComments' => fn ($query) => $query
+                        ->select(['id', 'post_id', 'user_id', 'parent_id', 'content', 'created_at'])
+                        ->latest()
+                        ->withCount('likes')
+                        ->withExists(['likes as is_liked' => fn ($likesQuery) => $likesQuery->where('user_id', $userId)])
+                        ->with([
+                            'user:id,first_name,last_name',
+                            'likes' => fn ($likesQuery) => $likesQuery
+                                ->select(['id', 'user_id', 'likeable_id', 'likeable_type'])
+                                ->with('user:id,first_name,last_name'),
+                            'replies' => fn ($repliesQuery) => $repliesQuery
+                                ->select(['id', 'post_id', 'user_id', 'parent_id', 'content', 'created_at'])
+                                ->latest()
+                                ->withCount('likes')
+                                ->withExists(['likes as is_liked' => fn ($likesQuery) => $likesQuery->where('user_id', $userId)])
+                                ->with([
+                                    'user:id,first_name,last_name',
+                                    'likes' => fn ($likesQuery) => $likesQuery
+                                        ->select(['id', 'user_id', 'likeable_id', 'likeable_type'])
+                                        ->with('user:id,first_name,last_name'),
+                                ]),
+                        ]),
+                ])
+                ->withCount(['likes', 'comments'])
+                ->withExists(['likes as is_liked' => fn ($query) => $query->where('user_id', $userId)])
+                ->visibleTo($userId)
+                ->latest()
+                ->paginate(10)),
         ]);
     }
 

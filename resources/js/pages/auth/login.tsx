@@ -1,16 +1,14 @@
 import { Form, Head, Link } from '@inertiajs/react';
 import InputError from '@/components/input-error';
-import { store } from '@/routes/login';
 import { register } from '@/routes';
-import { request as passwordRequest } from '@/routes/password';
+import { store } from '@/routes/login';
 
 type Props = {
     status?: string;
-    canResetPassword: boolean;
     canRegister: boolean;
 };
 
-export default function Login({ status, canResetPassword, canRegister }: Props) {
+export default function Login({ status, canRegister }: Props) {
     return (
         <>
             <Head title="Log in" />
@@ -103,19 +101,6 @@ export default function Login({ status, canResetPassword, canRegister }: Props) 
                                                             </label>
                                                         </div>
                                                     </div>
-                                                    {canResetPassword && (
-                                                        <div className="col-lg-6 col-xl-6 col-md-6 col-sm-12">
-                                                            <div className="_social_login_form_left">
-                                                                <Link
-                                                                    href={passwordRequest()}
-                                                                    className="_social_login_form_left_para"
-                                                                    tabIndex={5}
-                                                                >
-                                                                    Forgot password?
-                                                                </Link>
-                                                            </div>
-                                                        </div>
-                                                    )}
                                                 </div>
 
                                                 <div className="row">

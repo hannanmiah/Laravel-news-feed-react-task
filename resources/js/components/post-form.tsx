@@ -1,14 +1,14 @@
-import { useState, useRef } from 'react';
 import { useForm } from '@inertiajs/react';
+import { useRef, useState } from 'react';
 import { store as storePost } from '@/routes/posts';
 
-export default function PostForm({ authUser }: { authUser: { id: number; first_name: string; last_name: string } }) {
+export default function PostForm() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const { data, setData, post, processing, progress, reset } = useForm<{
         content: string;
         image: File | null;
-        visibility: string;
+        visibility: 'public' | 'private';
     }>({
         content: '',
         image: null,
@@ -19,6 +19,7 @@ export default function PostForm({ authUser }: { authUser: { id: number; first_n
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+
         if (file) {
             setData('image', file);
             const reader = new FileReader();
@@ -32,19 +33,23 @@ export default function PostForm({ authUser }: { authUser: { id: number; first_n
     const removeImage = () => {
         setData('image', null);
         setImagePreview(null);
+
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
     };
 
     const handleSubmit = () => {
-        if ((!data.content.trim() && !data.image) || processing) return;
+        if ((!data.content.trim() && !data.image) || processing) {
+return;
+}
 
         post(storePost.url(), {
             preserveScroll: true,
             onSuccess: () => {
                 reset();
                 setImagePreview(null);
+
                 if (fileInputRef.current) {
                     fileInputRef.current.value = '';
                 }
@@ -130,6 +135,22 @@ export default function PostForm({ authUser }: { authUser: { id: number; first_n
                 onChange={handleImageChange}
                 style={{ display: 'none' }}
             />
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px', marginBottom: '12px' }}>
+                <label htmlFor="post-visibility" style={{ marginRight: '8px', alignSelf: 'center', color: '#666' }}>
+                    Visibility
+                </label>
+                <select
+                    id="post-visibility"
+                    value={data.visibility}
+                    onChange={(e) => setData('visibility', e.target.value as 'public' | 'private')}
+                    className="form-control"
+                    style={{ width: '140px', height: '36px' }}
+                >
+                    <option value="public">Public</option>
+                    <option value="private">Private</option>
+                </select>
+            </div>
 
             {/* For Desktop */}
             <div className="_feed_inner_text_area_bottom">

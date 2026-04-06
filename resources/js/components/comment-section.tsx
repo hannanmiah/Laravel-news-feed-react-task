@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
-import { store as storeComment } from '@/routes/comments';
-import { destroy as destroyComment } from '@/routes/comments';
+import { useState } from 'react';
+import { destroy as destroyComment, store as storeComment } from '@/routes/comments';
 import { toggle as toggleLike } from '@/routes/likes';
 
 interface User {
@@ -35,9 +34,6 @@ interface CommentSectionProps {
     comments: Comment[];
     postId: number;
     authUserId: number;
-    commentsCount: number;
-    onCommentsChange: (comments: Comment[]) => void;
-    onCommentsCountChange: (count: number) => void;
 }
 
 function formatRelativeTime(dateString: string): string {
@@ -50,10 +46,22 @@ function formatRelativeTime(dateString: string): string {
     const diffDays = Math.floor(diffHours / 24);
     const diffWeeks = Math.floor(diffDays / 7);
 
-    if (diffSeconds < 60) return 'just now';
-    if (diffMinutes < 60) return `${diffMinutes}m`;
-    if (diffHours < 24) return `${diffHours}h`;
-    if (diffDays < 7) return `${diffDays}d`;
+    if (diffSeconds < 60) {
+        return 'now';
+    }
+
+    if (diffMinutes < 60) {
+        return `${diffMinutes}m`;
+    }
+
+    if (diffHours < 24) {
+        return `${diffHours}h`;
+    }
+
+    if (diffDays < 7) {
+        return `${diffDays}d`;
+    }
+
     return `${diffWeeks}w`;
 }
 
@@ -72,24 +80,15 @@ function CommentItem({
 }) {
     const [showReplyForm, setShowReplyForm] = useState(false);
     const [replyContent, setReplyContent] = useState('');
-    const [isLiked, setIsLiked] = useState(comment.is_liked);
-    const [likesCount, setLikesCount] = useState(comment.likes_count);
     const [submitting, setSubmitting] = useState(false);
-    const [replies, setReplies] = useState<Comment[]>(comment.replies || []);
-    const likerNames = comment.likes
+    const likes = comment.likes ?? [];
+    const replies = comment.replies ?? [];
+    const commenter = comment.user ?? { first_name: 'Unknown', last_name: '' };
+    const likerNames = likes
         .map((like) => like.user?.full_name ?? `${like.user?.first_name ?? ''} ${like.user?.last_name ?? ''}`.trim())
         .filter((name) => name.length > 0);
 
-    useEffect(() => {
-        setIsLiked(comment.is_liked);
-        setLikesCount(comment.likes_count);
-        setReplies(comment.replies || []);
-    }, [comment]);
-
     const handleLike = () => {
-        const newLiked = !isLiked;
-        setIsLiked(newLiked);
-        setLikesCount((prev) => (newLiked ? prev + 1 : prev - 1));
         router.post(
             toggleLike.url(),
             {
@@ -104,27 +103,32 @@ function CommentItem({
     };
 
     const handleReplySubmit = () => {
-        if (!replyContent.trim() || submitting) return;
+        if (!replyContent.trim() || submitting) {
+            return;
+        }
+
         setSubmitting(true);
-        router.post(storeComment.url(), {
-            post_id: postId,
-            parent_id: comment.id,
-            content: replyContent.trim(),
-        }, {
-            onSuccess: () => {
-                router.reload({ only: ['posts'] });
-                setReplyContent('');
-                setShowReplyForm(false);
+        router.post(
+            storeComment.url(),
+            {
+                post_id: postId,
+                parent_id: comment.id,
+                content: replyContent.trim(),
             },
-            onFinish: () => setSubmitting(false),
-        });
+            {
+                onSuccess: () => {
+                    router.reload({ only: ['posts'] });
+                    setReplyContent('');
+                    setShowReplyForm(false);
+                },
+                onFinish: () => setSubmitting(false),
+            },
+        );
     };
 
     const handleDeleteComment = (id: number) => {
         router.delete(destroyComment.url({ comment: id }), {
-            onSuccess: () => {
-                onCommentDeleted(id);
-            },
+            onSuccess: () => onCommentDeleted(id),
         });
     };
 
@@ -141,7 +145,7 @@ function CommentItem({
                         <div className="_comment_name">
                             <a href="#">
                                 <h4 className="_comment_name_title">
-                                    {comment.user.first_name} {comment.user.last_name}
+                                    {commenter.first_name} {commenter.last_name}
                                 </h4>
                             </a>
                         </div>
@@ -151,7 +155,7 @@ function CommentItem({
                             <span>{comment.content}</span>
                         </p>
                     </div>
-                    {(likesCount > 0 || isLiked) && (
+                    {((comment.likes_count ?? likes.length) > 0 || comment.is_liked) && (
                         <div className="_total_reactions">
                             <div className="_total_react">
                                 <span className="_reaction_like">
@@ -160,7 +164,7 @@ function CommentItem({
                                     </svg>
                                 </span>
                             </div>
-                            <span className="_total">{likesCount}</span>
+                            <span className="_total">{comment.likes_count ?? likes.length}</span>
                         </div>
                     )}
                     {likerNames.length > 0 && (
@@ -178,23 +182,30 @@ function CommentItem({
                                         onClick={handleLike}
                                         style={{
                                             cursor: 'pointer',
-                                            color: isLiked ? '#377DFF' : 'inherit',
-                                            fontWeight: isLiked ? 600 : 400,
+                                            color: comment.is_liked ? '#377DFF' : 'inherit',
+                                            fontWeight: comment.is_liked ? 600 : 400,
                                         }}
                                     >
                                         Like
                                     </span>
                                 </li>
                                 <li>
-                                    <span
-                                        style={{ cursor: 'pointer' }}
-                                        onClick={() => setShowReplyForm(!showReplyForm)}
-                                    >
+                                    <span style={{ cursor: 'pointer' }} onClick={() => setShowReplyForm(!showReplyForm)}>
                                         Reply
                                     </span>
                                 </li>
                                 <li>
-                                    <span className="_time_link">.{formatRelativeTime(comment.created_at)}</span>
+                                    <span
+                                        className="_time_link"
+                                        style={{
+                                            cursor: 'default',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
+                                        &middot;&nbsp;{formatRelativeTime(comment.created_at)}
+                                    </span>
                                 </li>
                                 {comment.user_id === authUserId && (
                                     <li>
@@ -213,7 +224,13 @@ function CommentItem({
 
                 {showReplyForm && (
                     <div className="_feed_inner_comment_box" style={{ marginTop: '8px' }}>
-                        <form className="_feed_inner_comment_box_form" onSubmit={(e) => { e.preventDefault(); handleReplySubmit(); }}>
+                        <form
+                            className="_feed_inner_comment_box_form"
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                handleReplySubmit();
+                            }}
+                        >
                             <div className="_feed_inner_comment_box_content">
                                 <div className="_feed_inner_comment_box_content_image">
                                     <img src="/assets/images/profile.png" alt="" className="_comment_img" />
@@ -256,7 +273,7 @@ function CommentItem({
                         authUserId={authUserId}
                         postId={postId}
                         depth={depth + 1}
-                        onCommentDeleted={handleDeleteComment}
+                        onCommentDeleted={onCommentDeleted}
                     />
                 ))}
             </div>
@@ -264,66 +281,58 @@ function CommentItem({
     );
 }
 
-export default function CommentSection({
-    comments,
-    postId,
-    authUserId,
-    commentsCount,
-    onCommentsChange,
-    onCommentsCountChange,
-}: CommentSectionProps) {
+export default function CommentSection({ comments, postId, authUserId }: CommentSectionProps) {
     const [newComment, setNewComment] = useState('');
     const [submitting, setSubmitting] = useState(false);
-    const [allComments, setAllComments] = useState<Comment[]>(comments);
-    const [totalCount, setTotalCount] = useState(commentsCount);
-
-    useEffect(() => {
-        setAllComments(comments);
-        setTotalCount(commentsCount);
-    }, [comments, commentsCount]);
+    const [showPreviousComments, setShowPreviousComments] = useState(false);
+    const allComments = comments ?? [];
+    const hasHiddenComments = allComments.length > 1;
+    const hiddenCommentsCount = Math.max(allComments.length - 1, 0);
+    const visibleComments = showPreviousComments ? allComments : allComments.slice(0, 1);
 
     const handleSubmit = () => {
-        if (!newComment.trim() || submitting) return;
+        if (!newComment.trim() || submitting) {
+            return;
+        }
+
         setSubmitting(true);
-        router.post(storeComment.url(), {
-            post_id: postId,
-            parent_id: null,
-            content: newComment.trim(),
-        }, {
-            onSuccess: () => {
-                router.reload({ only: ['posts'] });
-                setNewComment('');
+        router.post(
+            storeComment.url(),
+            {
+                post_id: postId,
+                parent_id: null,
+                content: newComment.trim(),
             },
-            onFinish: () => setSubmitting(false),
-        });
+            {
+                onSuccess: () => {
+                    router.reload({ only: ['posts'] });
+                    setNewComment('');
+                },
+                onFinish: () => setSubmitting(false),
+            },
+        );
     };
 
-    const handleCommentDeleted = (id: number) => {
-        const filterComments = (cs: Comment[]): Comment[] =>
-            cs
-                .filter((c) => c.id !== id)
-                .map((c) => ({
-                    ...c,
-                    replies: filterComments(c.replies || []),
-                }));
-        const updated = filterComments(allComments);
-        setAllComments(updated);
-        const newCount = totalCount - 1;
-        setTotalCount(newCount);
-        onCommentsChange(updated);
-        onCommentsCountChange(newCount);
+    const handleCommentDeleted = () => {
+        router.reload({ only: ['posts'] });
     };
 
     return (
         <>
             {allComments.length > 0 && (
                 <div className="_timline_comment_main">
-                    <div className="_previous_comment">
-                        <button type="button" className="_previous_comment_txt">
-                            View {totalCount} previous comments
-                        </button>
-                    </div>
-                    {allComments.map((comment) => (
+                    {hasHiddenComments && !showPreviousComments && (
+                        <div className="_previous_comment">
+                            <button
+                                type="button"
+                                className="_previous_comment_txt"
+                                onClick={() => setShowPreviousComments(true)}
+                            >
+                                {`View ${hiddenCommentsCount} previous comment${hiddenCommentsCount !== 1 ? 's' : ''}`}
+                            </button>
+                        </div>
+                    )}
+                    {visibleComments.map((comment) => (
                         <CommentItem
                             key={comment.id}
                             comment={comment}
@@ -340,7 +349,10 @@ export default function CommentSection({
                 <div className="_feed_inner_comment_box">
                     <form
                         className="_feed_inner_comment_box_form"
-                        onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            handleSubmit();
+                        }}
                     >
                         <div className="_feed_inner_comment_box_content">
                             <div className="_feed_inner_comment_box_content_image">

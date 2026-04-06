@@ -1,56 +1,9 @@
-import { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
+import { useState } from 'react';
 import { toggle as toggleLike } from '@/routes/likes';
 import { destroy as destroyPost } from '@/routes/posts';
+import type {Post} from '@/types';
 import CommentSection from './comment-section';
-
-interface User {
-    id: number;
-    first_name: string;
-    last_name: string;
-    email?: string;
-    full_name?: string;
-}
-
-interface Comment {
-    id: number;
-    content: string;
-    user_id: number;
-    post_id: number;
-    parent_id: number | null;
-    created_at: string;
-    user: User;
-    is_liked: boolean;
-    likes_count: number;
-    likes: Array<{
-        user_id: number;
-        likeable_id: number;
-        likeable_type: string;
-        user?: { first_name: string; last_name: string; full_name?: string };
-    }>;
-    replies: Comment[];
-}
-
-interface Post {
-    id: number;
-    content: string;
-    image: string | null;
-    visibility: string;
-    user_id: number;
-    created_at: string;
-    user: User;
-    likes_count: number;
-    comments_count: number;
-    is_liked: boolean;
-    top_level_comments: Comment[];
-    likes: Array<{
-        user_id: number;
-        likeable_id: number;
-        likeable_type: string;
-        user?: { first_name: string; last_name: string; full_name?: string };
-    }>;
-}
-
 interface PostCardProps {
     post: Post;
     authUserId: number;
@@ -66,34 +19,32 @@ function formatRelativeTime(dateString: string): string {
     const diffDays = Math.floor(diffHours / 24);
     const diffWeeks = Math.floor(diffDays / 7);
 
-    if (diffSeconds < 60) return 'just now';
-    if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
-    if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    if (diffSeconds < 60) {
+return 'just now';
+}
+
+    if (diffMinutes < 60) {
+return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
+}
+
+    if (diffHours < 24) {
+return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+}
+
+    if (diffDays < 7) {
+return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+}
+
     return `${diffWeeks} week${diffWeeks !== 1 ? 's' : ''} ago`;
 }
 
 export default function PostCard({ post, authUserId }: PostCardProps) {
-    const [isLiked, setIsLiked] = useState(post.is_liked);
-    const [likesCount, setLikesCount] = useState(post.likes_count);
-    const [comments, setComments] = useState(post.top_level_comments);
-    const [commentsCount, setCommentsCount] = useState(post.comments_count);
     const [showDropdown, setShowDropdown] = useState(false);
     const likerNames = post.likes
         .map((like) => like.user?.full_name ?? `${like.user?.first_name ?? ''} ${like.user?.last_name ?? ''}`.trim())
         .filter((name) => name.length > 0);
 
-    useEffect(() => {
-        setIsLiked(post.is_liked);
-        setLikesCount(post.likes_count);
-        setComments(post.top_level_comments);
-        setCommentsCount(post.comments_count);
-    }, [post]);
-
     const handleLike = () => {
-        const newLiked = !isLiked;
-        setIsLiked(newLiked);
-        setLikesCount((prev) => (newLiked ? prev + 1 : prev - 1));
         router.post(
             toggleLike.url(),
             {
@@ -152,7 +103,9 @@ export default function PostCard({ post, authUserId }: PostCardProps) {
                                         <li className="_feed_timeline_dropdown_item">
                                             <button
                                                 className="_feed_timeline_dropdown_link"
-                                                onClick={() => { handleDelete(); setShowDropdown(false); }}
+                                                onClick={() => {
+ handleDelete(); setShowDropdown(false); 
+}}
                                                 style={{ border: 'none', background: 'none', width: '100%', textAlign: 'left' }}
                                             >
                                                 <span>
@@ -196,17 +149,17 @@ export default function PostCard({ post, authUserId }: PostCardProps) {
             {/* Likes and comments count display */}
             <div className="_feed_inner_timeline_total_reacts _padd_r24 _padd_l24 _mar_b26">
                 <div className="_feed_inner_timeline_total_reacts_image">
-                    {likesCount > 0 && (
+                    {post.likes_count > 0 && (
                         <>
                             <img src="/assets/images/react_img1.png" alt="Like" className="_react_img1" />
                             <img src="/assets/images/react_img2.png" alt="Like" className="_react_img" />
-                            <p className="_feed_inner_timeline_total_reacts_para">{likesCount}</p>
+                            <p className="_feed_inner_timeline_total_reacts_para">{post.likes_count}</p>
                         </>
                     )}
                 </div>
                 <div className="_feed_inner_timeline_total_reacts_txt">
                     <p className="_feed_inner_timeline_total_reacts_para1">
-                        <a href="#"><span>{commentsCount}</span> Comment{commentsCount !== 1 ? 's' : ''}</a>
+                        <a href="#"><span>{post.comments_count}</span> Comment{post.comments_count !== 1 ? 's' : ''}</a>
                     </p>
                     {likerNames.length > 0 && (
                         <p className="_feed_inner_timeline_total_reacts_para2">
@@ -219,18 +172,18 @@ export default function PostCard({ post, authUserId }: PostCardProps) {
             {/* Action buttons: Like, Comment, Share */}
             <div className="_feed_inner_timeline_reaction">
                 <button
-                    className={`_feed_inner_timeline_reaction_emoji _feed_reaction ${isLiked ? '_feed_reaction_active' : ''}`}
+                    className={`_feed_inner_timeline_reaction_emoji _feed_reaction ${post.is_liked ? '_feed_reaction_active' : ''}`}
                     onClick={handleLike}
                 >
                     <span className="_feed_inner_timeline_reaction_link">
                         <span>
                             <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="none" viewBox="0 0 19 19">
-                                <path fill={isLiked ? '#FFCC4D' : '#ddd'} d="M9.5 19a9.5 9.5 0 100-19 9.5 9.5 0 000 19z" />
-                                <path fill={isLiked ? '#664500' : '#999'} d="M9.5 11.083c-1.912 0-3.181-.222-4.75-.527-.358-.07-1.056 0-1.056 1.055 0 2.111 2.425 4.75 5.806 4.75 3.38 0 5.805-2.639 5.805-4.75 0-1.055-.697-1.125-1.055-1.055-1.57.305-2.838.527-4.75.527z" />
-                                <path fill={isLiked ? '#fff' : '#ccc'} d="M4.75 11.611s1.583.528 4.75.528 4.75-.528 4.75-.528-1.056 2.111-4.75 2.111-4.75-2.11-4.75-2.11z" />
-                                <path fill={isLiked ? '#664500' : '#999'} d="M6.333 8.972c.729 0 1.32-.827 1.32-1.847s-.591-1.847-1.32-1.847c-.729 0-1.32.827-1.32 1.847s.591 1.847 1.32 1.847zM12.667 8.972c.729 0 1.32-.827 1.32-1.847s-.591-1.847-1.32-1.847c-.729 0-1.32.827-1.32 1.847s.591 1.847 1.32 1.847z" />
+                                <path fill={post.is_liked ? '#FFCC4D' : '#ddd'} d="M9.5 19a9.5 9.5 0 100-19 9.5 9.5 0 000 19z" />
+                                <path fill={post.is_liked ? '#664500' : '#999'} d="M9.5 11.083c-1.912 0-3.181-.222-4.75-.527-.358-.07-1.056 0-1.056 1.055 0 2.111 2.425 4.75 5.806 4.75 3.38 0 5.805-2.639 5.805-4.75 0-1.055-.697-1.125-1.055-1.055-1.57.305-2.838.527-4.75.527z" />
+                                <path fill={post.is_liked ? '#fff' : '#ccc'} d="M4.75 11.611s1.583.528 4.75.528 4.75-.528 4.75-.528-1.056 2.111-4.75 2.111-4.75-2.11-4.75-2.11z" />
+                                <path fill={post.is_liked ? '#664500' : '#999'} d="M6.333 8.972c.729 0 1.32-.827 1.32-1.847s-.591-1.847-1.32-1.847c-.729 0-1.32.827-1.32 1.847s.591 1.847 1.32 1.847zM12.667 8.972c.729 0 1.32-.827 1.32-1.847s-.591-1.847-1.32-1.847c-.729 0-1.32.827-1.32 1.847s.591 1.847 1.32 1.847z" />
                             </svg>
-                            {isLiked ? 'Liked' : 'Like'}
+                            {post.is_liked ? 'Liked' : 'Like'}
                         </span>
                     </span>
                 </button>
@@ -259,12 +212,9 @@ export default function PostCard({ post, authUserId }: PostCardProps) {
 
             {/* Comment section */}
             <CommentSection
-                comments={comments}
+                comments={post.top_level_comments}
                 postId={post.id}
                 authUserId={authUserId}
-                commentsCount={commentsCount}
-                onCommentsChange={setComments}
-                onCommentsCountChange={setCommentsCount}
             />
         </div>
     );
