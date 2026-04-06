@@ -1,18 +1,26 @@
 import { useState, useRef } from 'react';
-import { router } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { store as storePost } from '@/routes/posts';
 
 export default function PostForm({ authUser }: { authUser: { id: number; first_name: string; last_name: string } }) {
-    const [content, setContent] = useState('');
-    const [image, setImage] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [submitting, setSubmitting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const { data, setData, post, processing, progress, reset } = useForm<{
+        content: string;
+        image: File | null;
+        visibility: string;
+    }>({
+        content: '',
+        image: null,
+        visibility: 'public',
+    });
+
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            setImage(file);
+            setData('image', file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result as string);
@@ -22,7 +30,7 @@ export default function PostForm({ authUser }: { authUser: { id: number; first_n
     };
 
     const removeImage = () => {
-        setImage(null);
+        setData('image', null);
         setImagePreview(null);
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
@@ -30,30 +38,17 @@ export default function PostForm({ authUser }: { authUser: { id: number; first_n
     };
 
     const handleSubmit = () => {
-        if ((!content.trim() && !image) || submitting) return;
+        if ((!data.content.trim() && !data.image) || processing) return;
 
-        setSubmitting(true);
-
-        const formData = new FormData();
-        if (content.trim()) {
-            formData.append('content', content.trim());
-        }
-        if (image) {
-            formData.append('image', image);
-        }
-        formData.append('visibility', 'public');
-
-        router.post(storePost.url(), formData, {
-            forceFormData: true,
+        post(storePost.url(), {
+            preserveScroll: true,
             onSuccess: () => {
-                setContent('');
-                setImage(null);
+                reset();
                 setImagePreview(null);
                 if (fileInputRef.current) {
                     fileInputRef.current.value = '';
                 }
             },
-            onFinish: () => setSubmitting(false),
         });
     };
 
@@ -68,8 +63,8 @@ export default function PostForm({ authUser }: { authUser: { id: number; first_n
                         className="form-control _textarea"
                         placeholder="Leave a comment here"
                         id="floatingTextarea"
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
+                        value={data.content}
+                        onChange={(e) => setData('content', e.target.value)}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();
@@ -116,6 +111,15 @@ export default function PostForm({ authUser }: { authUser: { id: number; first_n
                     >
                         x
                     </button>
+                </div>
+            )}
+
+            {/* Upload progress */}
+            {progress && (
+                <div style={{ marginTop: '8px' }}>
+                    <progress value={progress.percentage} max="100" style={{ width: '100%' }}>
+                        {progress.percentage}%
+                    </progress>
                 </div>
             )}
 
@@ -172,11 +176,11 @@ export default function PostForm({ authUser }: { authUser: { id: number; first_n
                     </div>
                 </div>
                 <div className="_feed_inner_text_area_btn">
-                    <button type="button" className="_feed_inner_text_area_btn_link" onClick={handleSubmit} disabled={(!content.trim() && !image) || submitting}>
+                    <button type="button" className="_feed_inner_text_area_btn_link" onClick={handleSubmit} disabled={(!data.content.trim() && !data.image) || processing}>
                         <svg className="_mar_img" xmlns="http://www.w3.org/2000/svg" width="14" height="13" fill="none" viewBox="0 0 14 13">
                             <path fill="#fff" fillRule="evenodd" d="M6.37 7.879l2.438 3.955a.335.335 0 00.34.162c.068-.01.23-.05.289-.247l3.049-10.297a.348.348 0 00-.09-.35.341.341 0 00-.34-.088L1.75 4.03a.34.34 0 00-.247.289.343.343 0 00.16.347L5.666 7.17 9.2 3.597a.5.5 0 01.712.703L6.37 7.88zM9.097 13c-.464 0-.89-.236-1.14-.641L5.372 8.165l-4.237-2.65a1.336 1.336 0 01-.622-1.331c.074-.536.441-.96.957-1.112L11.774.054a1.347 1.347 0 011.67 1.682l-3.05 10.296A1.332 1.332 0 019.098 13z" clipRule="evenodd" />
                         </svg>
-                        <span>{submitting ? 'Posting...' : 'Post'}</span>
+                        <span>{processing ? 'Posting...' : 'Post'}</span>
                     </button>
                 </div>
             </div>
@@ -224,11 +228,11 @@ export default function PostForm({ authUser }: { authUser: { id: number; first_n
                         </div>
                     </div>
                     <div className="_feed_inner_text_area_btn">
-                        <button type="button" className="_feed_inner_text_area_btn_link" onClick={handleSubmit} disabled={(!content.trim() && !image) || submitting}>
+                        <button type="button" className="_feed_inner_text_area_btn_link" onClick={handleSubmit} disabled={(!data.content.trim() && !data.image) || processing}>
                             <svg className="_mar_img" xmlns="http://www.w3.org/2000/svg" width="14" height="13" fill="none" viewBox="0 0 14 13">
                                 <path fill="#fff" fillRule="evenodd" d="M6.37 7.879l2.438 3.955a.335.335 0 00.34.162c.068-.01.23-.05.289-.247l3.049-10.297a.348.348 0 00-.09-.35.341.341 0 00-.34-.088L1.75 4.03a.34.34 0 00-.247.289.343.343 0 00.16.347L5.666 7.17 9.2 3.597a.5.5 0 01.712.703L6.37 7.88zM9.097 13c-.464 0-.89-.236-1.14-.641L5.372 8.165l-4.237-2.65a1.336 1.336 0 01-.622-1.331c.074-.536.441-.96.957-1.112L11.774.054a1.347 1.347 0 011.67 1.682l-3.05 10.296A1.332 1.332 0 019.098 13z" clipRule="evenodd" />
                             </svg>
-                            <span>{submitting ? 'Posting...' : 'Post'}</span>
+                            <span>{processing ? 'Posting...' : 'Post'}</span>
                         </button>
                     </div>
                 </div>

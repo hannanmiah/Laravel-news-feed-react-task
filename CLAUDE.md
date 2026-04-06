@@ -205,3 +205,62 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - IMPORTANT: Activate `inertia-react-development` when working with Inertia React client-side patterns.
 
 </laravel-boost-guidelines>
+
+## Architecture and Project Specific Guidelines
+
+# Task Overview
+You are provided with three HTML/CSS pages: Login, Register, and Feed (located at ./resources/js path with html format. for assets it is in assets folder in current directory). Your task is to convert these pages into a inertia with reactjs frontend using laravel 13. Please carefully read the features listed below. You do not need to build beyond the listed requirements, but you may add improvements if you have additional time.
+Important: Stick to the provided design (we have used laravel react inertia starter kit for scaffolding, but these html pages uses different styling or css rather then starter kit uses tailwind). Do not change or use any alternative design.
+
+**Features to Develop**
+1. Authentication & Authorization
+  - Implement a secure authentication system (session-based or JWT-based) with proper authorization.
+  - Registration should include: first name, last name, email, and password.
+  - No need to build features like “forgot password” or others to keep it simple.
+  - Users should be able to sign up and log in to access the feed page.
+
+
+2. Feed Page
+  - This is a protected route, accessible only to logged-in users.
+  - All users can see posts from all other users.
+  - Posts should be displayed with the most recent at the top.
+  - You may ignore most of the design elements — focus only on the main functionality of the feed.
+
+
+**Required functionalities:**
+- Ability to create posts with text and image.
+
+
+- Show posts with the newest first.
+
+
+- Display like/unlike state correctly.
+
+
+- Implement comments, replies, and their like/unlike system.
+
+
+- Show who has liked a post, comment, or reply.
+
+
+- Support private and public posts:
+
+
+- Private: Visible only to the author
+
+
+- Public: Visible to everyone
+
+
+
+**Things to Consider**
+1. Follow best practices for development, security, and performance.
+
+
+2. Use standard database design and modeling practices.
+
+
+3. Design the system assuming millions of posts and reads.
+
+
+4. Security and User Experience (UX) should be your top priorities.
