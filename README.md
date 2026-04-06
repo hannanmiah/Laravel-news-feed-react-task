@@ -67,7 +67,7 @@ Comments and likes use Inertia's `router.post()` with `router.reload({ only: ['p
 
 ```bash
 # Clone the repository
-git clone <repo-url> news-feed
+git clone https://github.com/hannanmiah/Laravel-news-feed-react-task.git news-feed
 cd news-feed
 
 # Install PHP dependencies
