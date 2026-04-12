@@ -15,31 +15,25 @@ class PostController extends Controller
 
         return Inertia::render('feed', [
             'posts' => Inertia::scroll(fn () => Post::query()
-                ->select(['id', 'user_id', 'content', 'image', 'visibility', 'created_at'])
                 ->with([
                     'user:id,first_name,last_name',
                     'likes' => fn ($query) => $query
-                        ->select(['id', 'user_id', 'likeable_id', 'likeable_type'])
                         ->with('user:id,first_name,last_name'),
                     'topLevelComments' => fn ($query) => $query
-                        ->select(['id', 'post_id', 'user_id', 'parent_id', 'content', 'created_at'])
                         ->latest()
                         ->withCount('likes')
                         ->withExists(['likes as is_liked' => fn ($likesQuery) => $likesQuery->where('user_id', $userId)])
                         ->with([
                             'user:id,first_name,last_name',
                             'likes' => fn ($likesQuery) => $likesQuery
-                                ->select(['id', 'user_id', 'likeable_id', 'likeable_type'])
                                 ->with('user:id,first_name,last_name'),
                             'replies' => fn ($repliesQuery) => $repliesQuery
-                                ->select(['id', 'post_id', 'user_id', 'parent_id', 'content', 'created_at'])
                                 ->latest()
                                 ->withCount('likes')
                                 ->withExists(['likes as is_liked' => fn ($likesQuery) => $likesQuery->where('user_id', $userId)])
                                 ->with([
                                     'user:id,first_name,last_name',
                                     'likes' => fn ($likesQuery) => $likesQuery
-                                        ->select(['id', 'user_id', 'likeable_id', 'likeable_type'])
                                         ->with('user:id,first_name,last_name'),
                                 ]),
                         ]),

@@ -1,9 +1,24 @@
-import { useForm } from '@inertiajs/react';
-import { useRef, useState } from 'react';
+import { useForm,usePage } from '@inertiajs/react';
+import { useMemo, useRef, useState } from 'react';
 import { store as storePost } from '@/routes/posts';
 
+type PageProps = {
+    auth: {
+        user: {
+            first_name: string
+            last_name: string
+        }
+
+    }
+}
 export default function PostForm() {
+    const page = usePage<PageProps>()
+    const user = page.props.auth.user
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const userPhoto = useMemo(() => {
+        return `https://ui-avatars.com/api/?name=${user.first_name + user.last_name}&background=random&color=fff&size=128`;
+    }, [user]);
 
     const { data, setData, post, processing, progress, reset } = useForm<{
         content: string;
@@ -61,7 +76,7 @@ return;
         <div className="_feed_inner_text_area  _b_radious6 _padd_b24 _padd_t24 _padd_r24 _padd_l24 _mar_b16">
             <div className="_feed_inner_text_area_box">
                 <div className="_feed_inner_text_area_box_image">
-                    <img src="/assets/images/txt_img.png" alt="Image" className="_txt_img" />
+                    <img src={userPhoto} alt="Image" className="_txt_img" />
                 </div>
                 <div className="form-floating _feed_inner_text_area_box_form">
                     <textarea

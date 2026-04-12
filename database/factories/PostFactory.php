@@ -22,7 +22,7 @@ class PostFactory extends Factory
             'user_id' => User::factory(),
             'content' => fake()->sentence(rand(8, 20)),
             'image' => null,
-            'visibility' => 'public',
+            'visibility' => $this->faker->randomElement(['public', 'private']),
         ];
     }
 }

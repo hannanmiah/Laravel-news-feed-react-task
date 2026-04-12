@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect,useMemo, useRef } from 'react';
 import { toggle as toggleLike } from '@/routes/likes';
 import { destroy as destroyPost } from '@/routes/posts';
 import type {Post} from '@/types';
@@ -41,6 +41,10 @@ return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
 export default function PostCard({ post, authUserId }: PostCardProps) {
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const photo = useMemo(() => {
+        return `https://ui-avatars.com/api/?name=${post.user.first_name+post.user.last_name}&background=random&color=fff&size=128`;
+    },[post])
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -86,7 +90,7 @@ export default function PostCard({ post, authUserId }: PostCardProps) {
                 <div className="_feed_inner_timeline_post_top">
                     <div className="_feed_inner_timeline_post_box">
                         <div className="_feed_inner_timeline_post_box_image">
-                            <img src="/assets/images/profile.png" alt="" className="_post_img" />
+                            <img src={photo} alt="" className="_post_img" />
                         </div>
                         <div className="_feed_inner_timeline_post_box_txt">
                             <h4 className="_feed_inner_timeline_post_box_title">

@@ -17,30 +17,19 @@ class FeedSeeder extends Seeder
     public function run(): void
     {
         /** @var Collection<int, User> $users */
-        $users = User::query()->get();
-
-        if ($users->count() < 8) {
-            $users = $users->merge(User::factory()->count(8 - $users->count())->create());
-        }
+        $users = User::factory(20)->create();
 
         $posts = collect();
 
-        foreach ($users as $index => $author) {
-            $postCount = $index < 3 ? 3 : 2;
-
-            for ($i = 0; $i < $postCount; $i++) {
-                $visibility = $i === 0 && $index % 2 === 0 ? 'private' : 'public';
-
-                $post = Post::query()->create([
-                    'user_id' => $author->id,
-                    'content' => fake()->sentence(rand(8, 20)),
-                    'visibility' => $visibility,
-                    'image' => null,
-                ]);
-
+        // each users having 5 posts
+        $users->each(function ($user) use ($posts) {
+            // create 5 post each
+            Post::factory(5)->create([
+                'user_id' => $user->id,
+            ])->each(function (Post $post) use ($posts) {
                 $posts->push($post);
-            }
-        }
+            });
+        });
 
         $posts->each(function (Post $post) use ($users): void {
             $commenters = $users->where('id', '!=', $post->user_id)->shuffle()->take(rand(2, 5));

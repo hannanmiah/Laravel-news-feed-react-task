@@ -2,12 +2,7 @@ import { Transition } from '@headlessui/react';
 import { Form, Head } from '@inertiajs/react';
 import { useEffect, useRef } from 'react';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
-import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { edit } from '@/routes/security';
 
 export default function Security() {
     const passwordInput = useRef<HTMLInputElement>(null);
@@ -19,12 +14,15 @@ export default function Security() {
 
             <h1 className="sr-only">Security settings</h1>
 
-            <div className="space-y-6">
-                <Heading
-                    variant="small"
-                    title="Update password"
-                    description="Ensure your account is using a long, random password to stay secure"
-                />
+            <div className="_feed_inner_area _b_radious6 _padd_t24 _padd_b24 _padd_r24 _padd_l24 _mar_b24">
+                <div className="_mar_b24">
+                    <h4 className="_left_inner_area_explore_title _title5 _mar_b8">
+                        Update password
+                    </h4>
+                    <p style={{ color: '#666', fontSize: '14px' }}>
+                        Ensure your account is using a long, random password to stay secure
+                    </p>
+                </div>
 
                 <Form
                     {...SecurityController.update.form()}
@@ -46,79 +44,74 @@ export default function Security() {
                             currentPasswordInput.current?.focus();
                         }
                     }}
-                    className="space-y-6"
+                    className="_social_login_form"
                 >
                     {({ errors, processing, recentlySuccessful }) => (
                         <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="current_password">
-                                    Current password
-                                </Label>
-
-                                <PasswordInput
+                            <div className="_social_login_form_input _mar_b14">
+                                <label className="_social_login_label _mar_b8">Current password</label>
+                                <input
+                                    type="password"
                                     id="current_password"
                                     ref={currentPasswordInput}
                                     name="current_password"
-                                    className="mt-1 block w-full"
+                                    className="form-control _social_login_input"
                                     autoComplete="current-password"
                                     placeholder="Current password"
                                 />
-
                                 <InputError message={errors.current_password} />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">New password</Label>
-
-                                <PasswordInput
+                            <div className="_social_login_form_input _mar_b14">
+                                <label className="_social_login_label _mar_b8">New password</label>
+                                <input
+                                    type="password"
                                     id="password"
                                     ref={passwordInput}
                                     name="password"
-                                    className="mt-1 block w-full"
+                                    className="form-control _social_login_input"
                                     autoComplete="new-password"
                                     placeholder="New password"
                                 />
-
                                 <InputError message={errors.password} />
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
-                                    Confirm password
-                                </Label>
-
-                                <PasswordInput
+                            <div className="_social_login_form_input _mar_b14">
+                                <label className="_social_login_label _mar_b8">Confirm password</label>
+                                <input
+                                    type="password"
                                     id="password_confirmation"
                                     name="password_confirmation"
-                                    className="mt-1 block w-full"
+                                    className="form-control _social_login_input"
                                     autoComplete="new-password"
                                     placeholder="Confirm password"
                                 />
-
-                                <InputError
-                                    message={errors.password_confirmation}
-                                />
+                                <InputError message={errors.password_confirmation} />
                             </div>
 
-                            <div className="flex items-center gap-4">
-                                <Button
-                                    disabled={processing}
-                                    data-test="update-password-button"
-                                >
-                                    Save password
-                                </Button>
+                            <div className="_social_login_form_btn _mar_t24 _mar_b16">
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                    <button
+                                        type="submit"
+                                        className="_social_login_form_btn_link _btn1"
+                                        disabled={processing}
+                                        data-test="update-password-button"
+                                    >
+                                        {processing ? 'Saving...' : 'Save password'}
+                                    </button>
 
-                                <Transition
-                                    show={recentlySuccessful}
-                                    enter="transition ease-in-out"
-                                    enterFrom="opacity-0"
-                                    leave="transition ease-in-out"
-                                    leaveTo="opacity-0"
-                                >
-                                    <p className="text-sm text-neutral-600">
-                                        Saved
-                                    </p>
-                                </Transition>
+                                    <Transition
+                                        show={recentlySuccessful}
+                                        enter="transition ease-in-out"
+                                        enterFrom="opacity-0"
+                                        leave="transition ease-in-out"
+                                        leaveTo="opacity-0"
+                                    >
+                                        <p style={{ fontSize: '14px', color: '#16a34a' }}>
+                                            Saved
+                                        </p>
+                                    </Transition>
+                                </div>
                             </div>
                         </>
                     )}
@@ -128,11 +121,4 @@ export default function Security() {
     );
 }
 
-Security.layout = {
-    breadcrumbs: [
-        {
-            title: 'Security settings',
-            href: edit(),
-        },
-    ],
-};
+Security.layout = undefined;

@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { destroy as destroyComment, store as storeComment } from '@/routes/comments';
 import { toggle as toggleLike } from '@/routes/likes';
 
@@ -88,6 +88,9 @@ function CommentItem({
         .map((like) => like.user?.full_name ?? `${like.user?.first_name ?? ''} ${like.user?.last_name ?? ''}`.trim())
         .filter((name) => name.length > 0);
 
+    const commenterPhoto = useMemo(() => {
+        return `https://ui-avatars.com/api/?name=${commenter.first_name + commenter.last_name}&background=random&color=fff&size=128`;
+    }, [commenter.first_name, commenter.last_name]);
     const handleLike = () => {
         router.post(
             toggleLike.url(),
@@ -136,7 +139,7 @@ function CommentItem({
         <div className="_comment_main" style={{ marginTop: depth > 0 ? '10px' : '0' }}>
             <div className="_comment_image">
                 <a href="#" className="_comment_image_link">
-                    <img src="/assets/images/profile.png" alt="" className="_comment_img1" />
+                    <img src={commenterPhoto} alt="" className="_comment_img1" />
                 </a>
             </div>
             <div className="_comment_area">
